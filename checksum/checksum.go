@@ -15,20 +15,37 @@ type ChecksumClient int
 const (
 	ClientRoF2 ChecksumClient = iota
 	ClientLS
+	ClientLSOptional
 	ClientPatcher
 )
+
+func (e *ChecksumClient) String() string {
+	switch *e {
+	case ClientRoF2:
+		return "rof2"
+	case ClientLS:
+		return "ls"
+	case ClientLSOptional:
+		return "ls_opt"
+	case ClientPatcher:
+		return "patcher"
+	}
+	return "unknown"
+}
 
 var (
 	mux              sync.RWMutex
 	isClientLimited  bool
+	excludedClients  []ChecksumClient
 	patcherChecksums = make(map[string]*ChecksumEntry)
 )
 
 type ChecksumEntry struct {
-	Path     string
-	MD5Hash  string
-	XXH3Hash string
-	FileSize int64
+	IsDeleted bool
+	Path      string
+	MD5Hash   string
+	XXH3Hash  string
+	FileSize  int64
 }
 
 func SetClientLimit(isLimited bool) {
@@ -38,12 +55,12 @@ func SetClientLimit(isLimited bool) {
 }
 
 // FileSize returns the size of the from checksum cache
-func FileSize(context ChecksumClient, filename string) int64 {
+func FileSize(client ChecksumClient, filename string) int64 {
 	mux.RLock()
 	defer mux.RUnlock()
 
 	if isClientLimited {
-		switch context {
+		switch client {
 		case ClientRoF2:
 			entry, ok := rofChecksums[filename]
 			if ok {
@@ -54,38 +71,61 @@ func FileSize(context ChecksumClient, filename string) int64 {
 			if ok {
 				return entry.FileSize
 			}
+		case ClientLSOptional:
+			entry, ok := lsChecksums[filename]
+			if ok {
+				return entry.FileSize
+			}
 		case ClientPatcher:
 			entry, ok := patcherChecksums[filename]
 			if ok {
 				return entry.FileSize
 			}
+		default:
+			return -1
 		}
 	}
 
-	entry, ok := patcherChecksums[filename]
-	if ok {
-		return entry.FileSize
+	var entry *ChecksumEntry
+	var ok bool
+
+	if !isClientExcluded(ClientPatcher) {
+		entry, ok = patcherChecksums[filename]
+		if ok {
+			return entry.FileSize
+		}
 	}
 
-	entry, ok = lsChecksums[filename]
-	if ok {
-		return entry.FileSize
+	if !isClientExcluded(ClientLS) {
+		entry, ok = lsChecksums[filename]
+		if ok {
+			return entry.FileSize
+		}
 	}
 
-	entry, ok = rofChecksums[filename]
-	if ok {
-		return entry.FileSize
+	if !isClientExcluded(ClientLSOptional) {
+		entry, ok = lsOptChecksums[filename]
+		if ok {
+			return entry.FileSize
+		}
+	}
+
+	if !isClientExcluded(ClientRoF2) {
+		entry, ok = rofChecksums[filename]
+		if ok {
+			return entry.FileSize
+		}
 	}
 
 	return -1
 }
 
 // MD5Hash returns the MD5 hash of the from checksum cache
-func MD5Hash(context ChecksumClient, filename string) string {
+func MD5Hash(client ChecksumClient, filename string) string {
 	mux.RLock()
 	defer mux.RUnlock()
 
-	switch context {
+	switch client {
 	case ClientRoF2:
 		entry, ok := rofChecksums[filename]
 		if ok {
@@ -106,11 +146,11 @@ func MD5Hash(context ChecksumClient, filename string) string {
 }
 
 // XXH3Hash returns the XXH3 hash of the from checksum cache
-func XXH3Hash(context ChecksumClient, filename string) string {
+func XXH3Hash(client ChecksumClient, filename string) string {
 	mux.RLock()
 	defer mux.RUnlock()
 
-	switch context {
+	switch client {
 	case ClientRoF2:
 		entry, ok := rofChecksums[filename]
 		if ok {
@@ -172,4 +212,69 @@ func MD5Generate(path string) (value string, err error) {
 	}
 	value = fmt.Sprintf("%x", h.Sum(nil))
 	return
+}
+
+func ByClient(client ChecksumClient) (map[string]*ChecksumEntry, error) {
+	mux.RLock()
+	defer mux.RUnlock()
+
+	if isClientLimited {
+		switch client {
+		case ClientRoF2:
+			return rofChecksums, nil
+		case ClientLS:
+			return lsChecksums, nil
+		case ClientLSOptional:
+			return lsOptChecksums, nil
+		case ClientPatcher:
+			return patcherChecksums, nil
+		default:
+			return nil, fmt.Errorf("unknown client: %d", client)
+		}
+	}
+
+	checksums := make(map[string]*ChecksumEntry)
+	if !isClientExcluded(ClientPatcher) {
+		for k, v := range patcherChecksums {
+			if k == "Resources/BaseData.txt" {
+				fmt.Println("test")
+			}
+			checksums[k] = v
+		}
+	}
+
+	if !isClientExcluded(ClientLS) {
+		for k, v := range lsChecksums {
+			checksums[k] = v
+		}
+	}
+
+	if !isClientExcluded(ClientLSOptional) {
+		for k, v := range lsOptChecksums {
+			checksums[k] = v
+		}
+	}
+
+	if !isClientExcluded(ClientRoF2) {
+		for k, v := range rofChecksums {
+			checksums[k] = v
+		}
+	}
+
+	return checksums, nil
+}
+
+func SetExcludedClients(clients ...ChecksumClient) {
+	mux.Lock()
+	defer mux.Unlock()
+	excludedClients = append(excludedClients, clients...)
+}
+
+func isClientExcluded(client ChecksumClient) bool {
+	for _, c := range excludedClients {
+		if c == client {
+			return true
+		}
+	}
+	return false
 }

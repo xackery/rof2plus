@@ -16,11 +16,23 @@ func TestChecksumGen(t *testing.T) {
 	start := time.Now()
 	context := "ls"
 	rootPath := fmt.Sprintf("C:/Program Files (x86)/Steam/steamapps/content/app_205710/depot_205711_%s", context)
-	w, err := os.Create(fmt.Sprintf("%s_checksums.txt", context))
+	w, err := os.Create(fmt.Sprintf("%s.txt", context))
 	if err != nil {
 		t.Fatalf("failed to create file: %v", err)
 	}
 	defer w.Close()
+
+	var wopt *os.File
+	if context == "ls" {
+		wopt, err = os.Create(fmt.Sprintf("%s_opt.txt", context))
+		if err != nil {
+			t.Fatalf("failed to create file: %v", err)
+		}
+		defer wopt.Close()
+
+		wopt.WriteString("package checksum\n\n")
+		wopt.WriteString(fmt.Sprintf("var %sOptChecksums = map[string]*ChecksumEntry{\n", context))
+	}
 
 	w.WriteString("package checksum\n\n")
 	w.WriteString(fmt.Sprintf("var %sChecksums = map[string]*ChecksumEntry{\n", context))
@@ -66,6 +78,7 @@ func TestChecksumGen(t *testing.T) {
 	wg.Wait()
 
 	files := []string{}
+	optFiles := []string{}
 
 	for {
 		if len(chkChan) == 0 {
@@ -75,22 +88,25 @@ func TestChecksumGen(t *testing.T) {
 		if context == "ls" {
 			rofHash := MD5Hash(ClientRoF2, chkEntry.Path)
 
-			if rofHash != "" {
-				continue
-			}
-
 			if rofHash != "" && rofHash != chkEntry.MD5Hash {
-				fmt.Printf("MD5 hash mismatch for %s: %s != %s\n", chkEntry.Path, rofHash, chkEntry.MD5Hash)
-				//t.Fatalf("MD5 hash mismatch for %s: %s != %s", chkEntry.Path, rofHash, chkEntry.MD5Hash)
+				optFiles = append(optFiles, fmt.Sprintf("\t\"%s\": {MD5Hash: \"%s\", FileSize: %d},\n", chkEntry.Path, chkEntry.MD5Hash, tmpFiles[chkEntry.Path].FileSize))
 			}
 		}
 		files = append(files, fmt.Sprintf("\t\"%s\": {MD5Hash: \"%s\", FileSize: %d},\n", chkEntry.Path, chkEntry.MD5Hash, tmpFiles[chkEntry.Path].FileSize))
 	}
 
 	sort.Strings(files)
+	sort.Strings(optFiles)
 
 	for _, file := range files {
 		w.WriteString(file)
+	}
+
+	if len(optFiles) > 0 {
+		for _, file := range optFiles {
+			wopt.WriteString(file)
+		}
+		wopt.WriteString("}\n")
 	}
 
 	w.WriteString("}\n")
