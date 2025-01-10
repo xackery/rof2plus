@@ -13,9 +13,19 @@ import (
 )
 
 func TestChecksumGen(t *testing.T) {
+	rofPath := os.Getenv("ROF_BASE_PATH")
+	if rofPath == "" {
+		t.Skip("ROF_BASE_PATH not set")
+	}
+
+	lsPath := os.Getenv("LS_BASE_PATH")
+	if lsPath == "" {
+		t.Skip("LS_BASE_PATH not set")
+	}
+
+	rootPath := rofPath
 	start := time.Now()
 	context := "ls"
-	rootPath := fmt.Sprintf("C:/Program Files (x86)/Steam/steamapps/content/app_205710/depot_205711_%s", context)
 	w, err := os.Create(fmt.Sprintf("%s.txt", context))
 	if err != nil {
 		t.Fatalf("failed to create file: %v", err)

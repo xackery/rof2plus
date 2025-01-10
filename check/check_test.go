@@ -9,8 +9,11 @@ import (
 )
 
 func TestCheck(t *testing.T) {
-
-	err := Check(checksum.ClientLS, "c:/games/eq/thj/")
+	targetPath := os.Getenv("TARGET_PATH")
+	if targetPath == "" {
+		t.Skip("TARGET_PATH not set")
+	}
+	err := Check(checksum.ClientLS, targetPath)
 	if err != nil {
 		t.Fatalf("check: %v", err)
 	}
@@ -35,6 +38,10 @@ func TestCheck(t *testing.T) {
 }
 
 func TestPatcherCheck(t *testing.T) {
+	targetPath := os.Getenv("TARGET_PATH")
+	if targetPath == "" {
+		t.Skip("TARGET_PATH not set")
+	}
 	data, err := os.ReadFile("../bin/filelist_rof.yml")
 	if err != nil {
 		t.Fatalf("failed to read file: %v", err)
@@ -47,7 +54,7 @@ func TestPatcherCheck(t *testing.T) {
 
 	checksum.SetExcludedClients(checksum.ClientLS, checksum.ClientLSOptional)
 
-	err = Check(checksum.ClientPatcher, "c:/games/eq/thj-clean/")
+	err = Check(checksum.ClientPatcher, targetPath)
 	if err != nil {
 		t.Fatalf("check: %v", err)
 	}
