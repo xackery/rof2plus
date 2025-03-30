@@ -3,6 +3,8 @@ package checksum
 import (
 	"os"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestChecksumFilelist(t *testing.T) {
@@ -11,7 +13,14 @@ func TestChecksumFilelist(t *testing.T) {
 		t.Fatalf("failed to read file: %v", err)
 	}
 
-	err = SetPatcherFilelist(data)
+	fileList := &FileList{}
+
+	err = yaml.Unmarshal(data, fileList)
+	if err != nil {
+		t.Fatalf("failed to unmarshal filelist: %v", err)
+	}
+
+	err = SetPatcherFilelist(fileList)
 	if err != nil {
 		t.Fatalf("failed to set patcher filelist: %v", err)
 	}

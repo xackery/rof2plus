@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/xackery/rof2plus/checksum"
+	"gopkg.in/yaml.v3"
 )
 
 func TestCheck(t *testing.T) {
@@ -47,7 +48,14 @@ func TestPatcherCheck(t *testing.T) {
 		t.Fatalf("failed to read file: %v", err)
 	}
 
-	err = checksum.SetPatcherFilelist(data)
+	fileList := &checksum.FileList{}
+
+	err = yaml.Unmarshal(data, fileList)
+	if err != nil {
+		t.Fatalf("failed to unmarshal filelist: %v", err)
+	}
+
+	err = checksum.SetPatcherFilelist(fileList)
 	if err != nil {
 		t.Fatalf("failed to set patcher filelist: %v", err)
 	}

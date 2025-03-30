@@ -41,7 +41,7 @@ func Start(serverName string) error {
 	}
 
 	fmt.Printf("Selected server: %s\n", server.Name)
-	err = patch(server)
+	err = patchCheck(server)
 	if err != nil {
 		return fmt.Errorf("patch: %w", err)
 	}

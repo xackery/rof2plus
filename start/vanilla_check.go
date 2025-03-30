@@ -25,6 +25,12 @@ func vanillaCheck() error {
 		return fmt.Errorf("checkLS: %w", err)
 	}
 
+	fmt.Println("Saving changes")
+	err = cfg.Save()
+	if err != nil {
+		return fmt.Errorf("save config: %w", err)
+	}
+
 	return nil
 }
 

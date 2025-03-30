@@ -7,7 +7,6 @@ import (
 	"os"
 	"sort"
 	"sync"
-	"time"
 
 	"github.com/xackery/rof2plus/checksum"
 )
@@ -75,10 +74,10 @@ func Check(client checksum.ChecksumClient, rootPath string) error {
 		return fmt.Errorf("path is not a directory")
 	}
 
-	start := time.Now()
-	defer func() {
-		fmt.Printf("Check took %0.2fs seconds\n", time.Since(start).Seconds())
-	}()
+	// start := time.Now()
+	// defer func() {
+	// 	fmt.Printf("Check took %0.2fs seconds\n", time.Since(start).Seconds())
+	// }()
 	mux.Lock()
 	ctx, cancel = context.WithCancel(context.Background())
 	mux.Unlock()
@@ -103,9 +102,6 @@ func Check(client checksum.ChecksumClient, rootPath string) error {
 	for filePath, entry := range checksums {
 		wg.Add(1)
 		totalCount++
-		if entry.Path == "arena.eqg" {
-			fmt.Println("arena.eqg")
-		}
 
 		go checkPath(wg, summaryChan, client, rootPath, filePath, entry.IsDeleted)
 	}

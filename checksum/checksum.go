@@ -24,6 +24,8 @@ func (e *ChecksumClient) String() string {
 	switch *e {
 	case ClientRoF2:
 		return "rof2"
+	case ClientRoF2Core:
+		return "rof2core"
 	case ClientLS:
 		return "ls"
 	case ClientPatcher:
@@ -233,32 +235,29 @@ func ByClient(client ChecksumClient) (map[string]*ChecksumEntry, error) {
 	}
 
 	checksums := make(map[string]*ChecksumEntry)
-	if !isClientExcluded(ClientPatcher) {
-		for k, v := range patcherChecksums {
-			if k == "Resources/BaseData.txt" {
-				fmt.Println("test")
-			}
-			checksums[k] = v
-		}
-	}
-
-	if !isClientExcluded(ClientLS) {
-		for k, v := range lsChecksums {
-			checksums[k] = v
-		}
-	}
-
-	if !isClientExcluded(ClientRoF2) {
-		for k, v := range rofChecksums {
-			checksums[k] = v
-		}
-	}
-
 	if !isClientExcluded(ClientRoF2Core) {
 		for k, v := range rofCoreChecksums {
 			checksums[k] = v
 		}
 	}
+
+	if !isClientExcluded(ClientPatcher) {
+		for k, v := range patcherChecksums {
+			checksums[k] = v
+		}
+	}
+
+	// if !isClientExcluded(ClientLS) {
+	// 	for k, v := range lsChecksums {
+	// 		checksums[k] = v
+	// 	}
+	// }
+
+	// if !isClientExcluded(ClientRoF2) {
+	// 	for k, v := range rofChecksums {
+	// 		checksums[k] = v
+	// 	}
+	// }
 
 	return checksums, nil
 }
