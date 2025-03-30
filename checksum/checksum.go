@@ -1,3 +1,4 @@
+// package checksum manages the checksum of various file states
 package checksum
 
 import (
@@ -14,8 +15,8 @@ type ChecksumClient int
 
 const (
 	ClientRoF2 ChecksumClient = iota
+	ClientRoF2Core
 	ClientLS
-	ClientLSOptional
 	ClientPatcher
 )
 
@@ -25,8 +26,6 @@ func (e *ChecksumClient) String() string {
 		return "rof2"
 	case ClientLS:
 		return "ls"
-	case ClientLSOptional:
-		return "ls_opt"
 	case ClientPatcher:
 		return "patcher"
 	}
@@ -71,8 +70,8 @@ func FileSize(client ChecksumClient, filename string) int64 {
 			if ok {
 				return entry.FileSize
 			}
-		case ClientLSOptional:
-			entry, ok := lsChecksums[filename]
+		case ClientRoF2Core:
+			entry, ok := rofCoreChecksums[filename]
 			if ok {
 				return entry.FileSize
 			}
@@ -103,8 +102,8 @@ func FileSize(client ChecksumClient, filename string) int64 {
 		}
 	}
 
-	if !isClientExcluded(ClientLSOptional) {
-		entry, ok = lsOptChecksums[filename]
+	if !isClientExcluded(ClientRoF2Core) {
+		entry, ok = rofCoreChecksums[filename]
 		if ok {
 			return entry.FileSize
 		}
@@ -222,10 +221,10 @@ func ByClient(client ChecksumClient) (map[string]*ChecksumEntry, error) {
 		switch client {
 		case ClientRoF2:
 			return rofChecksums, nil
+		case ClientRoF2Core:
+			return rofCoreChecksums, nil
 		case ClientLS:
 			return lsChecksums, nil
-		case ClientLSOptional:
-			return lsOptChecksums, nil
 		case ClientPatcher:
 			return patcherChecksums, nil
 		default:
@@ -249,14 +248,14 @@ func ByClient(client ChecksumClient) (map[string]*ChecksumEntry, error) {
 		}
 	}
 
-	if !isClientExcluded(ClientLSOptional) {
-		for k, v := range lsOptChecksums {
+	if !isClientExcluded(ClientRoF2) {
+		for k, v := range rofChecksums {
 			checksums[k] = v
 		}
 	}
 
-	if !isClientExcluded(ClientRoF2) {
-		for k, v := range rofChecksums {
+	if !isClientExcluded(ClientRoF2Core) {
+		for k, v := range rofCoreChecksums {
 			checksums[k] = v
 		}
 	}

@@ -1,0 +1,38 @@
+{
+    "FixedFileInfo": {
+      "FileVersion": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 1,
+        "Build": 2
+      },
+      "ProductVersion": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 1,
+        "Build": 2
+      },
+      "FileFlagsMask": "3f",
+      "FileFlags": "00",
+      "FileOS": "040004",
+      "FileType": "01",
+      "FileSubtype": "00"
+    },
+    "StringFileInfo": {
+      "Comments": "Shinspark",
+      "CompanyName": "Shin's Shop",
+      "FileDescription": "Shinspark",
+      "FileVersion": "0.1.1.2",
+      "InternalName": "shinspark.exe",
+      "LegalCopyright": "Copyright © Shin's Shop 2024",
+      "OriginalFilename": "shinspark.exe",
+      "ProductName": "shinspark",
+      "ProductVersion": "0.1.1.2"
+    },
+    "VarFileInfo": {
+      "Translation": {
+        "LangID": "0409",
+        "CharsetID": "04B0"
+      }
+    }
+  }

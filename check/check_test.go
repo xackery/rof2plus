@@ -52,7 +52,7 @@ func TestPatcherCheck(t *testing.T) {
 		t.Fatalf("failed to set patcher filelist: %v", err)
 	}
 
-	checksum.SetExcludedClients(checksum.ClientLS, checksum.ClientLSOptional)
+	checksum.SetExcludedClients(checksum.ClientLS)
 
 	err = Check(checksum.ClientPatcher, targetPath)
 	if err != nil {

@@ -1,3 +1,4 @@
+// check validates a client based on context to verify files are accurate and up to date
 package check
 
 import (
@@ -58,6 +59,22 @@ func (e *Summary) String() string {
 
 // Check checks the path.
 func Check(client checksum.ChecksumClient, rootPath string) error {
+
+	if rootPath == "" {
+		return fmt.Errorf("path is empty")
+	}
+
+	fi, err := os.Stat(rootPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("path does not exist: %w", err)
+		}
+		return fmt.Errorf("stat path: %w", err)
+	}
+	if !fi.IsDir() {
+		return fmt.Errorf("path is not a directory")
+	}
+
 	start := time.Now()
 	defer func() {
 		fmt.Printf("Check took %0.2fs seconds\n", time.Since(start).Seconds())
