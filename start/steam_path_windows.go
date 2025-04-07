@@ -3,6 +3,8 @@ package start
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -19,5 +21,18 @@ func SteamPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("steam path: %w", err)
 	}
-	return steamPathValue, nil
+
+	depotPath := filepath.Join(steamPathValue, "steamapps", "content", "app_205710", "depot_205711")
+	fi, err := os.Stat(depotPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("depot path does not exist: %w", err)
+		}
+		return "", fmt.Errorf("stat depot path: %w", err)
+	}
+	if !fi.IsDir() {
+		return "", fmt.Errorf("depot path is not a directory")
+	}
+
+	return depotPath, nil
 }

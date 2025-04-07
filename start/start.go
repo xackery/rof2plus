@@ -11,14 +11,15 @@ import (
 
 // Start begins the program process
 func Start(serverName string) error {
-	err := installCheck()
-	if err != nil {
-		return fmt.Errorf("installCheck: %w", err)
-	}
 
-	_, err = config.New(context.Background(), "rof2plus")
+	_, err := config.New(context.Background(), "rof2plus")
 	if err != nil {
 		return fmt.Errorf("config.New: %w", err)
+	}
+
+	err = installCheck()
+	if err != nil {
+		return fmt.Errorf("installCheck: %w", err)
 	}
 
 	err = vanillaCheck()

@@ -67,6 +67,8 @@ func New(ctx context.Context, baseName string) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("encode default: %w", err)
 		}
+
+		config = &cfg
 		return &cfg, nil
 	}
 
