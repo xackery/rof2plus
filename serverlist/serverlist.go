@@ -25,14 +25,14 @@ type ServerEntry struct {
 
 // Fetch gets the latest server list
 func Fetch() error {
-	data, err := os.ReadFile("serverlist.yaml")
+	data, err := os.ReadFile("rof2plus_servers.yaml")
 	if err != nil {
 		if os.IsNotExist(err) {
 			err = download()
 			if err != nil {
 				return fmt.Errorf("download: %w", err)
 			}
-			data, err = os.ReadFile("serverlist.yaml")
+			data, err = os.ReadFile("rof2plus_servers.yaml")
 			if err != nil {
 				return fmt.Errorf("read download: %w", err)
 			}
@@ -71,7 +71,7 @@ func download() error {
 		return fmt.Errorf("marshal: %w", err)
 	}
 
-	err = os.WriteFile("serverlist.yaml", data, 0644)
+	err = os.WriteFile("rof2plus_servers.yaml", data, 0644)
 	if err != nil {
 		return fmt.Errorf("write: %w", err)
 	}

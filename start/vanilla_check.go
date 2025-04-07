@@ -47,7 +47,7 @@ func checkVanillaClient(client string) error {
 			}
 			path = ""
 		}
-		if !fi.IsDir() {
+		if fi != nil && !fi.IsDir() {
 			path = ""
 		}
 	}
@@ -80,7 +80,7 @@ func checkVanillaClient(client string) error {
 			}
 			path = strings.TrimSpace(path)
 			if path == "" {
-				fmt.Println("You must provide a valid path.")
+				fmt.Println("You must provide a valid path")
 				continue
 			}
 
@@ -89,12 +89,12 @@ func checkVanillaClient(client string) error {
 				if !os.IsNotExist(err) {
 					return fmt.Errorf("stat path: %w", err)
 				}
-				fmt.Println("Path does not exist. Please try again.")
+				fmt.Println("Path does not exist. Please try again")
 				continue
 			}
 
 			if !fi.IsDir() {
-				fmt.Println("Path is not a directory. Please try again.")
+				fmt.Println("Path is not a directory. Please try again")
 				continue
 			}
 
@@ -104,7 +104,6 @@ func checkVanillaClient(client string) error {
 		}
 	}
 
-	isDepotDownloaded := false
 	if strings.ToLower(answer) == "n" {
 		fmt.Printf("You can install %s from Steam using the steam console.\n", client)
 		fmt.Printf("Would you like me to open the console for you? (y/n) ")
@@ -150,12 +149,12 @@ func checkVanillaClient(client string) error {
 				return fmt.Errorf("monitor depot: %w", err)
 			}
 
-			fmt.Println("Download complete!", client, "files are ready.")
+			fmt.Println("Download complete!", client, "files are ready")
 
 		}
 	}
 
-	if isDepotDownloaded {
+	if strings.Contains(path, "steamapp") {
 		fmt.Printf("It looks like your %s path is in steamapps.\n", client)
 		fmt.Printf("I can move it to rof2plus\\%s. This is recommended.\n", client)
 		fmt.Printf("Would you like me to do this? (y/n) ")
@@ -169,18 +168,13 @@ func checkVanillaClient(client string) error {
 			return fmt.Errorf("invalid answer")
 		}
 		if strings.ToLower(answer) == "y" {
-			// Copy the depot files to the rof2plus directory
-			err = os.MkdirAll(client, 0755)
-			if err != nil {
-				return fmt.Errorf("mkdir: %w", err)
-			}
 
 			fmt.Printf("Moving depot files to %s directory...\n", client)
-			err = os.Rename(path, client)
+			err = os.Rename(path, "./"+client)
 			if err != nil {
 				return fmt.Errorf("rename: %w", err)
 			}
-			fmt.Println("Done.")
+			fmt.Println("Done")
 		}
 		path = client
 	}
@@ -237,7 +231,7 @@ func validateVanillaClient(client string, path string) error {
 
 	if report.FailTotal > 0 {
 		firstFail := report.Failures[0]
-		if len(report.Failures) > 1 {
+		if len(report.Failures) > 3 {
 
 			fmt.Printf("Client %s is invalid, %d files failed.\n", client, report.FailTotal)
 			fmt.Println("First failed file:", firstFail)

@@ -31,7 +31,7 @@ type FileEntry struct {
 // FetchPatcherFilelist fetches the filelist from the patcher server
 func FetchPatcherFilelist(baseURL string) (*FileList, error) {
 	fileList := &FileList{}
-	data, err := os.ReadFile("filelist_rof.yml")
+	data, err := os.ReadFile("rof2plus_filelist.yml")
 	if err == nil {
 		err = yaml.Unmarshal(data, fileList)
 		if err != nil {
@@ -48,7 +48,7 @@ func FetchPatcherFilelist(baseURL string) (*FileList, error) {
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	url := fmt.Sprintf("%s/filelist_rof.yml", baseURL)
+	url := fmt.Sprintf("%s/rof2plus_filelist.yml", baseURL)
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("download %s: %w", url, err)
